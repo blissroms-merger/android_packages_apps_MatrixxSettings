@@ -259,4 +259,27 @@
     <string name="lockscreen_charge_temp_unit_title">Temperature unit</string>
     <string name="lockscreen_charge_temp_unit_farhenheit">Fahrenheit</string>
     <string name="lockscreen_charge_temp_unit_celsius">Celsius</string>
+
+    <!-- QS panel styles -->
+    <string name="theme_customization_qs_style_title">QS Panel style</string>
+    <string name="theme_customization_qs_style_summary">Set custom QS Panel style</string>
+
+    <!-- Brightness bar styles -->
+    <string name="theme_customization_brightness_bar_title">Brightness bar style</string>
+    <string name="theme_customization_brightness_bar_summary">Set custom brightness bar style</string>
+
+    <!-- Notifications style -->
+    <string name="theme_customization_notifications_title">Notifications style</string>
+    <string name="theme_customization_notifications_summary">Set custom notifications style</string>
+
+    <!-- Data icon picker -->
+    <string name="theme_customization_data_icon_title">Data icon style</string>
+    <string name="theme_customization_data_icon_summary">Set custom data icon style</string>
+
+    <string name="volte_icon_style_title">VoLTE Icon</string>
+    <string name="volte_icon_style_summary">Set custom volte icon style</string>
+
+    <string name="vowifi_icon_title">VoWiFi Icon</string>
+    <string name="vowifi_icon_summary">Set custom vowifi icon style</string>
+
 </resources>

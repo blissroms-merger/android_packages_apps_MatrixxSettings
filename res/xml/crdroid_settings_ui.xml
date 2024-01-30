@@ -118,11 +118,35 @@
 
     <!-- Signal icon style -->
     <Preference
+        android:key="android.customization.sb_data"
+        android:icon="@drawable/ic_fourg"
+        android:title="@string/theme_customization_data_icon_title"
+        android:summary="@string/theme_customization_data_icon_summary"
+        android:fragment="com.crdroid.settings.fragments.ui.DataIcons"/>
+
+    <!-- Signal icon style -->
+    <Preference
         android:key="android.theme.customization.signal_icon"
         android:icon="@drawable/ic_signal"
         android:title="@string/theme_customization_signal_icon_title"
         android:summary="@string/theme_customization_signal_icon_summary"
         android:fragment="com.crdroid.settings.fragments.ui.SignalIcons"/>
+
+     <!-- Volte icon style -->
+    <Preference
+         android:key="volte_icon_style"
+         android:icon="@drawable/ic_volte"
+         android:title="@string/volte_icon_style_title"
+         android:summary="@string/volte_icon_style_summary"
+         android:fragment="com.crdroid.settings.fragments.ui.VoLteStyles"/>
+
+    <!-- VoWifi icon style -->
+    <Preference
+         android:key="vowifi_icon_style"
+         android:icon="@drawable/ic_vowifi"
+         android:title="@string/vowifi_icon_title"
+         android:summary="@string/vowifi_icon_summary"
+         android:fragment="com.crdroid.settings.fragments.ui.VoWifiStyles"/>
 
     <!-- Wifi icon style -->
     <Preference

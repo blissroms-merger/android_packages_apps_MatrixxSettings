@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-package com.crdroid.settings.fragments.qs;
+package com.crdroid.settings.fragments.ui;
 
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Color;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -50,14 +49,14 @@ import androidx.preference.Preference.OnPreferenceChangeListener;
 import androidx.preference.PreferenceScreen;
 
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
-import com.android.internal.util.crdroid.ImageHelper;
 import com.android.settings.R;
 import com.android.settings.search.BaseSearchIndexProvider;
 import com.android.settingslib.search.Indexable;
-import com.android.settingslib.Utils;
 import com.android.settings.SettingsPreferenceFragment;
 
 import com.bumptech.glide.Glide;
+
+import com.android.internal.util.crdroid.ThemeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,18 +67,18 @@ import java.util.Arrays;
 import org.json.JSONObject;
 import org.json.JSONException;
 
-public class QsHeaderImageStyles extends SettingsPreferenceFragment {
+public class VoWifiStyles extends SettingsPreferenceFragment {
 
-    private static final int HEADER_COUNT = 36;
+    private static final int ICON_COUNT =9;
 
     private RecyclerView mRecyclerView;
-    private List<String> mQsHeaderImages;
+    private List<String> mIconImages;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setTitle(R.string.qs_header_image_title);
-        mQsHeaderImages = loadHeadersList();
+        getActivity().setTitle(R.string.vowifi_icon_title);
+        mIconImages = loadIconList();
     }
 
     @Override
@@ -88,7 +87,7 @@ public class QsHeaderImageStyles extends SettingsPreferenceFragment {
 
         View view = inflater.inflate(R.layout.item_view, container, false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 1);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 3);
         mRecyclerView.setLayoutManager(gridLayoutManager);
         Adapter mAdapter = new Adapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
@@ -116,7 +115,7 @@ public class QsHeaderImageStyles extends SettingsPreferenceFragment {
 
         @Override
         public CustomViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.qs_header_image_option, parent, false);
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.icon_image_option, parent, false);
             CustomViewHolder vh = new CustomViewHolder(v);
             return vh;
         }
@@ -124,15 +123,12 @@ public class QsHeaderImageStyles extends SettingsPreferenceFragment {
         @Override
         public void onBindViewHolder(CustomViewHolder holder, final int position) {
 
-            int currentHeaderNumber = getCurrentHeaderNumber();
+            int currentIconNumber = getCurrentIconNumber();
 
-            String loadedImage = mQsHeaderImages.get(position);
-            Bitmap background = getBitmap(holder.qsHeaderImage.getContext(), loadedImage);
-            float radius = getContext().getResources().getDimensionPixelSize(Utils.getThemeAttr(
-                                    getContext(), android.R.attr.dialogCornerRadius));
-            holder.qsHeaderImage.setImageBitmap(ImageHelper.getRoundedCornerBitmap(background, radius));
+            String loadedImage = mIconImages.get(position);
+            holder.iconImage.setBackgroundDrawable(getDrawable(holder.iconImage.getContext(), loadedImage));
 
-            if (currentHeaderNumber == (position + 1)) {
+            if (currentIconNumber == (position)) {
                 mAppliedImage = loadedImage;
                 if (mSelectedImage == null) {
                     mSelectedImage = loadedImage;
@@ -148,34 +144,28 @@ public class QsHeaderImageStyles extends SettingsPreferenceFragment {
                     updateActivatedStatus(loadedImage, true);
                     mSelectedImage = loadedImage;
                     Settings.System.putIntForUser(resolver,
-                            Settings.System.QS_HEADER_IMAGE, position + 1,
+                            Settings.System.VOWIFI_ICON_STYLE, position,
                             UserHandle.USER_CURRENT);
-                    if (currentHeaderNumber == -1) {
-                        // if previous header was provided by user, clear Uri
-                        Settings.System.putStringForUser(resolver,
-                                Settings.System.QS_HEADER_IMAGE_URI, "",
-                                UserHandle.USER_CURRENT);
-                    }
                 }
             });
         }
 
         @Override
         public int getItemCount() {
-            return HEADER_COUNT;
+            return ICON_COUNT;
         }
 
         public class CustomViewHolder extends RecyclerView.ViewHolder {
-            ImageView qsHeaderImage;
+            ImageView iconImage;
 
             public CustomViewHolder(View itemView) {
                 super(itemView);
-                qsHeaderImage = (ImageView) itemView.findViewById(R.id.qs_header_image);
+                iconImage = (ImageView) itemView.findViewById(R.id.icon_image);
             }
         }
 
         private void updateActivatedStatus(String image, boolean isActivated) {
-            int index = mQsHeaderImages.indexOf(image);
+            int index = mIconImages.indexOf(image);
             if (index < 0) {
                 return;
             }
@@ -186,26 +176,22 @@ public class QsHeaderImageStyles extends SettingsPreferenceFragment {
         }
     }
 
-    private Bitmap getBitmap(Context context, String drawableName) {
-        return ImageHelper.drawableToBitmap(getDrawable(context, drawableName));
-    }
-
     public Drawable getDrawable(Context context, String drawableName) {
         Resources res = context.getResources();
         int resId = res.getIdentifier(drawableName, "drawable", "com.android.settings");
         return res.getDrawable(resId);
     }
 
-    private int getCurrentHeaderNumber() {
+    private int getCurrentIconNumber() {
         return Settings.System.getIntForUser(getContentResolver(),
-                Settings.System.QS_HEADER_IMAGE, 0, UserHandle.USER_CURRENT);
+                Settings.System.VOWIFI_ICON_STYLE, 0, UserHandle.USER_CURRENT);
     }
 
-    private List<String> loadHeadersList() {
-        List<String> headersList = new ArrayList<String>(HEADER_COUNT);
-        for (int i = 1; i <= HEADER_COUNT; i++) {
-            headersList.add("qs_header_image_" + i);
+    private List<String> loadIconList() {
+        List<String> iconList = new ArrayList<String>(ICON_COUNT);
+        for (int i = 1; i <= ICON_COUNT; i++) {
+            iconList.add("ic_vowifi_" + i);
         }
-        return headersList;
+        return iconList;
     }
 }

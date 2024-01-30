@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2023 crDroid Android Project
- * Copyright (C) 2023 AlphaDroid
+ * Copyright (C) 2022 crDroid Android Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +14,15 @@
  * limitations under the License.
  */
 
-package com.crdroid.settings.fragments.qs;
+package com.crdroid.settings.fragments.ui;
 
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Color;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.UserHandle;
 import android.provider.SearchIndexableResource;
 import android.provider.Settings;
 import android.view.LayoutInflater;
@@ -50,14 +47,14 @@ import androidx.preference.Preference.OnPreferenceChangeListener;
 import androidx.preference.PreferenceScreen;
 
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
-import com.android.internal.util.crdroid.ImageHelper;
 import com.android.settings.R;
 import com.android.settings.search.BaseSearchIndexProvider;
 import com.android.settingslib.search.Indexable;
-import com.android.settingslib.Utils;
 import com.android.settings.SettingsPreferenceFragment;
 
 import com.bumptech.glide.Glide;
+
+import com.android.internal.util.crdroid.ThemeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,30 +65,35 @@ import java.util.Arrays;
 import org.json.JSONObject;
 import org.json.JSONException;
 
-public class QsHeaderImageStyles extends SettingsPreferenceFragment {
-
-    private static final int HEADER_COUNT = 36;
+public class DataIcons extends SettingsPreferenceFragment {
 
     private RecyclerView mRecyclerView;
-    private List<String> mQsHeaderImages;
+    private ThemeUtils mThemeUtils;
+    private String mCategory = "android.customization.sb_data";
+
+    private List<String> mPkgs;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setTitle(R.string.qs_header_image_title);
-        mQsHeaderImages = loadHeadersList();
+        getActivity().setTitle(R.string.theme_customization_data_icon_title);
+
+        mThemeUtils = new ThemeUtils(getActivity());
+        mPkgs = mThemeUtils.getOverlayPackagesForCategory(mCategory, "com.android.systemui");
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(
+                R.layout.item_view, container, false);
 
-        View view = inflater.inflate(R.layout.item_view, container, false);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 1);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 3);
         mRecyclerView.setLayoutManager(gridLayoutManager);
         Adapter mAdapter = new Adapter(getActivity());
         mRecyclerView.setAdapter(mAdapter);
+
         return view;
     }
 
@@ -107,8 +109,8 @@ public class QsHeaderImageStyles extends SettingsPreferenceFragment {
 
     public class Adapter extends RecyclerView.Adapter<Adapter.CustomViewHolder> {
         Context context;
-        String mSelectedImage;
-        String mAppliedImage;
+        String mSelectedPkg;
+        String mAppliedPkg;
 
         public Adapter(Context context) {
             this.context = context;
@@ -116,66 +118,70 @@ public class QsHeaderImageStyles extends SettingsPreferenceFragment {
 
         @Override
         public CustomViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.qs_header_image_option, parent, false);
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.icon_option, parent, false);
             CustomViewHolder vh = new CustomViewHolder(v);
             return vh;
         }
 
         @Override
         public void onBindViewHolder(CustomViewHolder holder, final int position) {
+            String iconPkg = mPkgs.get(position);
 
-            int currentHeaderNumber = getCurrentHeaderNumber();
+            holder.image1.setBackgroundDrawable(getDrawable(holder.image1.getContext(), iconPkg, "ic_4g_mobiledata"));
+            holder.image2.setBackgroundDrawable(getDrawable(holder.image2.getContext(), iconPkg, "ic_4g_plus_mobiledata"));
+            holder.image3.setBackgroundDrawable(getDrawable(holder.image3.getContext(), iconPkg, "ic_5g_mobiledata"));
+            holder.image4.setBackgroundDrawable(getDrawable(holder.image4.getContext(), iconPkg, "ic_lte_mobiledata"));
 
-            String loadedImage = mQsHeaderImages.get(position);
-            Bitmap background = getBitmap(holder.qsHeaderImage.getContext(), loadedImage);
-            float radius = getContext().getResources().getDimensionPixelSize(Utils.getThemeAttr(
-                                    getContext(), android.R.attr.dialogCornerRadius));
-            holder.qsHeaderImage.setImageBitmap(ImageHelper.getRoundedCornerBitmap(background, radius));
+            String currentPackageName = mThemeUtils.getOverlayInfos(mCategory, "com.android.systemui").stream()
+                .filter(info -> info.isEnabled())
+                .map(info -> info.packageName)
+                .findFirst()
+                .orElse("com.android.systemui");
 
-            if (currentHeaderNumber == (position + 1)) {
-                mAppliedImage = loadedImage;
-                if (mSelectedImage == null) {
-                    mSelectedImage = loadedImage;
+            holder.name.setText("com.android.systemui".equals(iconPkg) ? "Default" : getLabel(holder.name.getContext(), iconPkg));
+
+            if (currentPackageName.equals(iconPkg)) {
+                mAppliedPkg = iconPkg;
+                if (mSelectedPkg == null) {
+                    mSelectedPkg = iconPkg;
                 }
             }
 
-            holder.itemView.setActivated(loadedImage == mSelectedImage);
+            holder.itemView.setActivated(iconPkg == mSelectedPkg);
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ContentResolver resolver = getContext().getContentResolver();
-                    updateActivatedStatus(mSelectedImage, false);
-                    updateActivatedStatus(loadedImage, true);
-                    mSelectedImage = loadedImage;
-                    Settings.System.putIntForUser(resolver,
-                            Settings.System.QS_HEADER_IMAGE, position + 1,
-                            UserHandle.USER_CURRENT);
-                    if (currentHeaderNumber == -1) {
-                        // if previous header was provided by user, clear Uri
-                        Settings.System.putStringForUser(resolver,
-                                Settings.System.QS_HEADER_IMAGE_URI, "",
-                                UserHandle.USER_CURRENT);
-                    }
+                    updateActivatedStatus(mSelectedPkg, false);
+                    updateActivatedStatus(iconPkg, true);
+                    mSelectedPkg = iconPkg;
+                    enableOverlays(position);
                 }
             });
         }
 
         @Override
         public int getItemCount() {
-            return HEADER_COUNT;
+            return mPkgs.size();
         }
 
         public class CustomViewHolder extends RecyclerView.ViewHolder {
-            ImageView qsHeaderImage;
-
+            TextView name;
+            ImageView image1;
+            ImageView image2;
+            ImageView image3;
+            ImageView image4;
             public CustomViewHolder(View itemView) {
                 super(itemView);
-                qsHeaderImage = (ImageView) itemView.findViewById(R.id.qs_header_image);
+                name = (TextView) itemView.findViewById(R.id.option_label);
+                image1 = (ImageView) itemView.findViewById(R.id.image1);
+                image2 = (ImageView) itemView.findViewById(R.id.image2);
+                image3 = (ImageView) itemView.findViewById(R.id.image3);
+                image4 = (ImageView) itemView.findViewById(R.id.image4);
             }
         }
 
-        private void updateActivatedStatus(String image, boolean isActivated) {
-            int index = mQsHeaderImages.indexOf(image);
+        private void updateActivatedStatus(String pkg, boolean isActivated) {
+            int index = mPkgs.indexOf(pkg);
             if (index < 0) {
                 return;
             }
@@ -186,26 +192,31 @@ public class QsHeaderImageStyles extends SettingsPreferenceFragment {
         }
     }
 
-    private Bitmap getBitmap(Context context, String drawableName) {
-        return ImageHelper.drawableToBitmap(getDrawable(context, drawableName));
-    }
-
-    public Drawable getDrawable(Context context, String drawableName) {
-        Resources res = context.getResources();
-        int resId = res.getIdentifier(drawableName, "drawable", "com.android.settings");
-        return res.getDrawable(resId);
-    }
-
-    private int getCurrentHeaderNumber() {
-        return Settings.System.getIntForUser(getContentResolver(),
-                Settings.System.QS_HEADER_IMAGE, 0, UserHandle.USER_CURRENT);
-    }
-
-    private List<String> loadHeadersList() {
-        List<String> headersList = new ArrayList<String>(HEADER_COUNT);
-        for (int i = 1; i <= HEADER_COUNT; i++) {
-            headersList.add("qs_header_image_" + i);
+    public Drawable getDrawable(Context context, String pkg, String drawableName) {
+        try {
+            PackageManager pm = context.getPackageManager();
+            Resources res = pm.getResourcesForApplication(pkg);
+            int resId = res.getIdentifier(drawableName, "drawable", pkg);
+            return res.getDrawable(resId);
         }
-        return headersList;
+        catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getLabel(Context context, String pkg) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            return pm.getApplicationInfo(pkg, 0)
+                    .loadLabel(pm).toString();
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return pkg;
+    }
+
+    public void enableOverlays(int position) {
+        mThemeUtils.setOverlayEnabled(mCategory, mPkgs.get(position), "com.android.systemui");
     }
 }

@@ -24,6 +24,13 @@
         android:key="notification_illustration"
         lineage:lottie_rawRes="@raw/notification_illustration" />
 
+    <Preference
+        android:key="android.theme.customization.nf_style"
+        android:icon="@drawable/ic_color_bucket"
+        android:title="@string/theme_customization_notifications_title"
+        android:summary="@string/theme_customization_notifications_summary"
+        android:fragment="com.crdroid.settings.fragments.notifications.NFStyles"/>
+
     <com.crdroid.settings.preferences.SystemSettingSwitchPreference
         android:key="alert_slider_notifications"
         android:icon="@drawable/ic_light_switch"
