@@ -45,6 +45,7 @@ import com.android.settingslib.search.SearchIndexable;
 
 import com.crdroid.settings.preferences.SystemSettingListPreference;
 import com.crdroid.settings.preferences.colorpicker.ColorPickerPreference;
+import com.crdroid.settings.fragments.lockscreen.UdfpsAnimation;
 
 import java.util.List;
 
@@ -184,6 +185,7 @@ public class LockScreen extends SettingsPreferenceFragment
                 Settings.System.LOCKSCREEN_WEATHER_LOCATION, 0, UserHandle.USER_CURRENT);
         Settings.System.putIntForUser(resolver,
                 Settings.System.LOCKSCREEN_WEATHER_TEXT, 1, UserHandle.USER_CURRENT);
+        UdfpsAnimation.reset(mContext);
     }
 
     private void updateWeatherSettings() {
